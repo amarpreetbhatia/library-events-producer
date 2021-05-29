@@ -16,8 +16,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(LibraryEventsController.class)
@@ -48,5 +48,45 @@ public class LibraryEventControllerUnitTest {
                     .content(request)
                     .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isCreated());
+    }
+
+    @Test
+    public void testPostLibraryEvent_4xx_when_bookId_is_null() throws Exception {
+        LibraryEvent libraryEvent = LibraryEvent
+                .builder()
+                .libraryEventId(null)
+                .book(Book.builder().bookId(null).bookAuthor("Amarpreet").bookName(null).build())
+                .build();
+        String request = mapper.writeValueAsString(libraryEvent);
+
+        doNothing().when(libraryEventProducer).sendLibraryEventApproach2(isA(LibraryEvent.class));
+
+        String exceptedContent = "book.bookId - must not be null,book.bookName - must not be blank";
+        mockMvc.perform(
+                post("/v1/libraryevent")
+                        .content(request)
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest())
+        .andExpect(content().string(exceptedContent));
+    }
+
+    @Test
+    public void testPostLibraryEvent_4xx_when_book_is_null() throws Exception {
+        LibraryEvent libraryEvent = LibraryEvent
+                .builder()
+                .libraryEventId(null)
+                .book(null)
+                .build();
+        String request = mapper.writeValueAsString(libraryEvent);
+
+        doNothing().when(libraryEventProducer).sendLibraryEventApproach2(isA(LibraryEvent.class));
+
+        String exceptedContent = "book - must not be null";
+        mockMvc.perform(
+                post("/v1/libraryevent")
+                        .content(request)
+                        .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest())
+                .andExpect(content().string(exceptedContent));
     }
 }

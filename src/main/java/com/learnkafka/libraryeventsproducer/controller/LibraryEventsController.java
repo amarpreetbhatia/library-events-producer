@@ -9,13 +9,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.support.SendResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+
 
 @RestController
 @Slf4j
@@ -25,8 +28,8 @@ public class LibraryEventsController {
     LibraryEventProducer libraryEventProducer;
 
     @PostMapping("/v1/libraryevent")
-    public ResponseEntity<LibraryEvent> postLibraryEvent(@RequestBody LibraryEvent libraryEvent)
-            throws JsonProcessingException, ExecutionException, InterruptedException, TimeoutException {
+    public ResponseEntity<LibraryEvent> postLibraryEvent(@RequestBody @Valid LibraryEvent libraryEvent)
+            throws JsonProcessingException {
         // invoke Kafka
         log.info("send before to kafka topic");
 //  1      libraryEventProducer.sendLibraryEvent(libraryEvent);
@@ -40,7 +43,7 @@ public class LibraryEventsController {
 
     @PutMapping("/v1/libraryevent")
     public ResponseEntity<?> putLibraryEvent(@RequestBody LibraryEvent libraryEvent)
-            throws JsonProcessingException, ExecutionException, InterruptedException, TimeoutException {
+            throws JsonProcessingException {
         if(libraryEvent.getLibraryEventId() == null){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please pass event Id");
         }
