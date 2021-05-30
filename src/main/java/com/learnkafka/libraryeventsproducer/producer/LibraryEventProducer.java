@@ -6,7 +6,6 @@ import com.learnkafka.libraryeventsproducer.domain.LibraryEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.Header;
-import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -15,9 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -53,7 +50,7 @@ public class LibraryEventProducer {
         });
     }
 
-    public void sendLibraryEventApproach2(LibraryEvent libraryEvent) throws JsonProcessingException {
+    public ListenableFuture<SendResult<Integer,String>> sendLibraryEventApproach2(LibraryEvent libraryEvent) throws JsonProcessingException {
         Integer key = libraryEvent.getLibraryEventId();
         String value = objectMapper.writeValueAsString(libraryEvent);
 
@@ -71,6 +68,8 @@ public class LibraryEventProducer {
                 handleSuccess(key,value,result);
             }
         });
+
+        return listenableFuture;
     }
 
     private ProducerRecord<Integer, String> buildProduceRecord(String topic, Integer key, String value) {
