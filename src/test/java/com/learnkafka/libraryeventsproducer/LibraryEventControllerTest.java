@@ -83,6 +83,32 @@ public class LibraryEventControllerTest {
         assertEquals(expectedValue,value);
 
     }
+
+    @Test
+    @Timeout(5)
+    void testPutLibraryEvent(){
+        LibraryEvent libraryEvent = LibraryEvent
+                .builder()
+                .libraryEventId(101)
+                .book(Book.builder().bookId(123).bookAuthor("Amarpreet").bookName("Kakfa Sample").build())
+                .build();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<LibraryEvent> requestBody = new HttpEntity<>(libraryEvent);
+
+        ResponseEntity<LibraryEvent> responseEntity = restTemplate
+                .exchange("/v1/libraryevent", HttpMethod.PUT,requestBody,LibraryEvent.class);
+
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+        ConsumerRecord<Integer,String> consumerRecord = KafkaTestUtils
+                .getSingleRecord(consumer,"library-events");
+        String expectedValue = "{\"libraryEventId\":101,\"libraryEventType\":\"UPDATE\",\"book\":{\"bookId\":123,\"bookName\":\"Kakfa Sample\",\"bookAuthor\":\"Amarpreet\"}}";
+        String value = consumerRecord.value();
+
+        assertEquals(expectedValue,value);
+
+    }
 }
 
 

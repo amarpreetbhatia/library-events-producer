@@ -50,9 +50,10 @@ public class LibraryEventsController {
         // invoke Kafka
         log.info("send before to kafka topic");
         libraryEvent.setLibraryEventType(LibraryEventType.UPDATE);
-        libraryEventProducer.sendLibraryEvent(libraryEvent);
+       // libraryEventProducer.sendLibraryEvent(libraryEvent);
+        libraryEventProducer.sendLibraryEventApproach2(libraryEvent);
         log.info("send after to kafka topic");
-        return ResponseEntity.status(HttpStatus.CREATED).body(libraryEvent);
+        return ResponseEntity.status(HttpStatus.OK).body(libraryEvent);
     }
 
 }
