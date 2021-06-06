@@ -1,0 +1,25 @@
+1. Generate server.keystore.jks
+---->  keytool -keystore server.keystore.jks -alias localhost -validity 365 -genkey -keyalg RSA
+2. Setup Local Certificate Authority (Need this step only for local, entperise keystore don't need to do this)
+---->  openssl req -new -x509 -keyout ca-key -out ca-cert -days 365 -subj "/CN=local-security-CA"
+3. Create CSR(Certificate singing Request)
+---->  keytool -keystore server.keystore.jks -alias localhost -certreq -file cert-file
+4. Sign the SSL Certificate
+----> openssl x509 -req -CA ca-cert -CAkey ca-key -in cert-file -out cert-signed -days 365 -CAcreateserial -passin pass:password
+5. Add the Signed SSL certificate to server.keystore file
+----> keytool -keystore server.keystore.jks -alias CARoot -import -file ca-cert
+      keytool -keystore server.keystore.jks -alias localhost -import -file cert-signed
+6. Configure the SSL cert in our Kafka Broker
+---> put below props and update in bin/config/server.properties(in all the brokers)
+     ssl.keystore.location=<location>/server.keystore.jks
+     ssl.keystore.password=password
+     ssl.key.password=password
+     ssl.endpoint.identification.algorithm=
+
+And add
+Listeners=PLAINTEXT://localhost:9092, SSL://localhost:9095
+
+7. Create client.truststore.jks for the client
+----> keytool -keystore client.truststore.jks -alias CARoot -import -file ca-cert
+
+w.r.t. https://github.com/dilipsundarraj1/kafka-for-developers-using-spring-boot/blob/master/Kafka_Security.md
